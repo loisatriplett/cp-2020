@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang='en' dir='ltr'>
+    <head>
+        <meta charset='utf-8'>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LabName</title>
+        <script src="jspsych-6.0.5/jspsych.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-button-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-image-keyboard-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-choice.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-text.js"></script>
+        <script src="jspsych-6.0.5//plugins/jspsych-call-function.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-external-html.js"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+      
+        <!-- default favicon -->
+        <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+
+        <!-- wideley used favicon -->
+        <link rel="icon" href="img/favicon.png" sizes="32x32" type="image/png">
+      
+        <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+    
+        <noscript>
+            <p>Javascript has been disabled in your browser.</p>
+            <p>In order to complete this study, you must enable JavaScript.</p>
+            <p>Here are <a href="https://www.enable-javascript.com/">instructions on how to enable JavaScript in your web browser</a>.</p>
+        </noscript>
+        
+        <header id='lab-header'>
+            <img id='lab-logo' src='img/logo-img.png' alt='LabName logo'/>
+        </header>
+        
+        <div id='jspsych-target'>
+        </div>
+    
+    </body>
+    <script>
+
+        
+        /******************************************/
+        /* Code to run prevalence/concept-change studies  */
+        /* David Levari, August 2019  */
+        /* Contact: david.levari@gmail.com  */ 
+        /* Please do not use or distribute without permission    */
+        /******************************************/
+        
+        /******************************************/
+        /* Edited Code to run creativity / prevalence studies */
+        /* If it's broke, that's probably me */
+        /* Mind at Large Lab, Jan 2020 */
+        /* Contact: loisatriplett@gmail.com */
+        /******************************************/
+
+        
+
+        /******************************************/
+        /*           EDITABLE VARIABLES           */
+        /******************************************/
+        
+        /*THESE ARE THE THINGS THAT CAN BE CHANGED*/
+        
+        /* DO YOU WANT TO TEST THE PROGRAM? */
+        const test_mode = true; //TRUE WILL OVERRIDE TRIALS PER BLOCK TO 10 AND STUDY TIMELINE TO SKIP FINAL QUESTIONS
+        
+        /* HOW SHOULD THE SUBJECT ID BE FORMATTED? */
+        const subject_id = '9999-9999_' + jsPsych.randomization.randomID(10); /* IRB APPROVAL CODE + RANDOM 10 DIGIT ID
+        
+        /* HOW MANY MILLISECONDS BETWEEN EACH STIMULI? */
+        const fixation_duration = 500;
+        
+        /* HOW MANY TRIALS IN EACH BLOCK? */
+        var trials_per_block = 34;
+        
+        /* WHAT PERCENTAGE OF SIGNAL STIMULI IN EACH BLOCK? */
+        const signalrate_block1 = 0.5; //50% SIGNAL
+        const signalrate_block2 = 0.5; //50% SIGNAL
+        const signalrate_block3 = 0.29; //29% SIGNAL
+        const signalrate_block4 = 0.08; //8% SIGNAL
+        const signalrate_block5 = 0.08; //8% SIGNAL
+        
+        /* WHAT PERCENTAGE OF SIGNAL STIMULI IN EACH CONTROL BLOCK? */
+        const signalrate_control = 0.5; //50% SIGNAL
+        
+        /* DO YOU WANT A CONTROL GROUP? */
+        const control_group = true;
+        
+        /* WHAT PERCENTAGE OF PARTICIPANTS SHOULD BE IN THE CONTROL GROUP? */
+        const control_amt = 0.5; //50% OF PARTICIPANTS //ROUNDED TO NEAREST TEN
+        
+        /* PRINT VARIABLES TO CONSOLE */
+        const editable_variables = {test_mode,subject_id,fixation_duration,trials_per_block,signalrate_block1,signalrate_block2,signalrate_block3,signalrate_block4,signalrate_block5,signalrate_control,control_group,control_amt};
+        
+        console.log(editable_variables);
+        
+        
+        /******************************************/
+        /*           STARTUP VARIABLES            */
+        /******************************************/
+        
+        /* ACTIVATING TEST MODE IF SELECTED */
+        if(test_mode==true){
+            trials_per_block = 10;
+        };
+        
+        /* DECIDING IF CONTROL CONDITION OR NOT */
+        const total_perc = [1,2,3,4,5,6,7,8,9,10];
+        var control_coins = [];      
+        var control = '';
+        
+        /* IF CONTROL CONDITION OPTION CHOSEN USE PERCENT GIVEN */
+        if(control_group==true){
+            
+            /* SETS UP PERCENT CHANCE OF BEING IN CONTROL CONDITION */
+            var amt = Math.round(control_amt * 10);
+            
+            for (i=1;i<=amt;i++){
+                var x = i;
+                control_coins.push(x);
+            }
+            draw = jsPsych.randomization.sampleWithoutReplacement(total_perc, 1);
+                
+            for(var i=0; i<control_coins.length; i++){
+                var x = control_coins[i];
+                if(x == draw){
+                    control = true;
+                    break;
+                }
+                else{
+                    control = false;
+                }
+            };
+        }
+        
+        /* ELSE RUN AS IF NOT IN CONTROL CONDITION */
+        else{
+            control = false;
+        };
+        
+        
+        const header = document.getElementById("lab-header");
+        var blockcounter = 0;
+        var signalrate = 0;
+        
+        /* ADD VARIABLES TO DATA */
+        jsPsych.data.addProperties({blockcounter: blockcounter});
+        jsPsych.data.addProperties({signalrate: signalrate});
+        jsPsych.data.addProperties({subject_id: subject_id});
+        jsPsych.data.addProperties({control_group: control_group});
+        jsPsych.data.addProperties({control: control});
+        
+    
+        /* FUNCTION TO TOGGLE HEADER VISIBILITY */
+        var toggleHeader = function() {
+            var x = document.getElementById("lab-header");
+            if (x.style.visibility === "hidden") {
+                x.style.visibility = "visible";
+            } else {
+                x.style.visibility = "hidden";
+            }
+            if (x.style.display === "none") {
+                x.style.display = "flex";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        /* FUNCTION TO TOGGLE HEADER OPACITY */
+        var dimHeader = function() {
+            var x = document.getElementById("lab-logo");
+            if (x.style.opacity == 0.15) {
+                x.style.opacity = 1.0;
+            }
+            else {
+                x.style.opacity = 0.15;
+            }
+        }
+
+        /* CALL TO TOGGLE FUNCTION */
+        var toggle = {
+            type: 'call-function',
+            func: dimHeader
+        };
+        
+        /* FUNCTION TO SUM ARRAY OBJECTS */
+        $.sum = function(arr) {
+            var r = 0;
+            $.each(arr, function(i, v) {
+            r += +v;
+            });
+        return r;
+        };
+        
+        /* CALCULATING BLOCK RATIOS */
+        const signal_ct = [signalrate_block1, signalrate_block2, signalrate_block3, signalrate_block4, signalrate_block5];
+        const all_signal = signal_ct.map(x => Math.round(x * trials_per_block));
+        const all_noise = all_signal.map(x => trials_per_block - x);
+        const test_signal_amt = $.sum(all_signal);
+        const test_noise_amt = $.sum(all_noise);
+        
+        const control_signal = Math.round(signalrate_control * trials_per_block); 
+        const control_noise = trials_per_block - control_signal;
+        const control_signal_amt = control_signal * 5;
+        const control_noise_amt = control_noise * 5;
+
+        
+        /* CREATE EXPERIMENT TIMELINE */
+        var timeline = [];
+
+
+        /* SPACE BAR VARIABLE */
+        var keycode = jsPsych.pluginAPI.convertKeyCharacterToKeyCode('space');
+        
+        
+        /* ARRAY TO LOAD IMAGES */
+        var loading_images = [];
+
+        
+        /* TEXT FOR INSTRUCTION PAGES */
+        
+        var instructions1 = "<p>In this experiment, you will see [STIMULI] shown on the screen one at a time.</p><p>Your task will be to rate [STIMULI] by [SIGNAL].</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+        
+        var instructions2 = "<p>When you see a [SIGNAL STIMULUS] on the screen, press the '[SIGNAL]' key.</p><p>When you see a [STIMULUS] that is not [SIGNAL], press the '[NOT SIGNAL]' key.</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+
+        var instructions3 = "<p>The [STIMULI] will be shown in groups with breaks in between.</p><p>This means you will see a group of [STIMULI], have a short break, and then see another group of [STIMULI].</p><p>You will do this until you have seen a total of [#] groups of [STIMULI].</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+
+        var instructions4 = "<p>Some of the groups you see may have a lot of [SIGNAL STIMULI], and others may have only a few [SIGNAL STIMULI].</p><p>There is nothing for you to count or keep track of -- your only task is to rate each [STIMULUS] as [SIGNAL] or [NOT SIGNAL].</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+
+        var instructions5 = "<p>Do your best to answer quickly and accurately during the task.</p><p>There is no such thing as a wrong answer.</p><p>However, if you miss one or make a mistake and hit the wrong button at any point, just keep going.</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+
+        var instructions6 = "<p>After you are done rating all of the [STIMULI], you will be asked a few demographics questions.</p><p><b>Remember that you must continue to the last screen in order to receive your [PLATFORM] Verification Code</b>.</p><p><i>Please Press the Spacebar to Continue.</i></p>";
+        
+        
+        var task_intro = {
+            type: "html-keyboard-response",
+            stimulus: "",
+            choices: [keycode],
+            prompt: "<p><i>When You Are Ready, Please Press the Spacebar to Begin the Experiment</i>.</p>"
+        };
+
+        /* CONSENT HTML VARIABLE */
+        var consent_block = {
+            type:'external-html',
+            url: "consent.html",
+            cont_btn: "start"
+        };
+        
+        
+        /* FUNCTION TO LOAD ALL IMAGES */
+        var loadImages = $(function () {
+            var i=1;
+            for (i=101;i<=415;i++){
+                var curImg = '"art/' + i + '.jpg"';
+                loading_images.push(curImg);
+            };
+            console.log('images pre-loaded');
+        });
+        
+        /* REPLACE SIGNAL.JPG WITH INDIVIDUAL IMAGE NAMES FOR SIGNAL STIMULI */
+        
+        /* GROUP SIGNAL STIMULUS */
+        var signal = [
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+            { stimulus: "art/signal.jpg", data: {rating: '1', creativity: '0.00', relative_creativity: '0.00'}},
+        ];
+        
+        /* REPLACE NOISE.JPG WITH INDIVIDUAL IMAGE NAMES FOR NOISE STIMULI */
+
+        /* GROUP NOT SIGNAL AKA NOISE STIMULUS */
+        var noise = [
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+            { stimulus: "art/noise.jpg", data: {rating: '0', creativity: '0.00', relative_creativity: '-0.00'}},
+        ];
+        
+
+
+        /******************************************/
+        /*          TRIAL VARIABLES               */
+        /******************************************/
+        
+        
+        /* INSTRUCTION PAGES TRIAL VARIABLE */
+        var instruct = {
+            type: "instructions",
+            pages: make_pages,
+            on_finish: function(data){
+                start_time = jsPsych.startTime(); //save start time as global variable
+                jsPsych.data.addProperties({start_time: start_time});}, //adds start time to data
+            key_forward: keycode,
+            allow_backward: false
+        };
+        
+        function make_pages () {
+            return [instructions1,instructions2,instructions3,instructions4,instructions5,instructions6];
+        }
+
+        
+        /* EXPERIMENT TRIAL VARIABLE */
+        var test = {
+            type: "image-keyboard-response",
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            stimulus_height: 400,
+            stimulus_width: 600,
+            choices: ['f', 'j'],
+            data: jsPsych.timelineVariable('data'),
+            prompt: "<p> [NOT SIGNAL] (F) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [SIGNAL] (J)</p>"
+        };
+        
+        
+        /* CROSS FIXATION TRIAL VARIABLE VARIABLE */
+        var fixation = {
+            type: 'image-keyboard-response',
+            stimulus: 'img/fixation.png',
+            choices: jsPsych.NO_KEYS,
+            trial_duration: fixation_duration
+        };
+        
+        
+        /* RANDOMIZING AND SELECTING EACH BLOCK */
+        
+        if(control==false){
+            var exp_signal = jsPsych.randomization.sampleWithoutReplacement(signal,test_signal_amt);
+            var exp_noise = jsPsych.randomization.sampleWithoutReplacement(noise,test_noise_amt);
+            
+            var block1_signal = jsPsych.randomization.sampleWithoutReplacement(exp_signal,all_signal[0]);
+            var block1_noise = jsPsych.randomization.sampleWithoutReplacement(exp_noise,all_noise[0]);
+            
+            block1 = block1_signal.concat(block1_noise);
+        
+            var working_signal1 = $(exp_signal).not(block1_signal).get();
+            var working_noise1 = $(exp_noise).not(block1_noise).get();
+        
+            var block2_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal1,all_signal[1]);
+            var block2_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise1,all_noise[1]);
+            
+            block2 = block2_signal.concat(block2_noise);
+        
+            var working_signal2 = $(working_signal1).not(block2_signal).get();
+            var working_noise2 = $(working_noise1).not(block2_noise).get();
+            
+            var block3_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal2,all_signal[2]);
+            var block3_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise2,all_noise[2]);
+            
+            block3 = block3_signal.concat(block3_noise);
+            
+            var working_signal3 = $(working_signal2).not(block3_signal).get();
+            var working_noise3 = $(working_noise2).not(block3_noise).get();
+            
+            var block4_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal3,all_signal[3]);
+            var block4_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise3,all_noise[3]);
+            
+            block4 = block4_signal.concat(block4_noise);
+            
+            var working_signal4 = $(working_signal3).not(block4_signal).get();
+            var working_noise4 = $(working_noise3).not(block4_noise).get();
+            
+            var block5_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal4,all_signal[4]);
+            var block5_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise4,all_noise[4]);
+            
+            block5 = block5_signal.concat(block5_noise);
+        }
+        
+        else {
+            var exp_signal = jsPsych.randomization.sampleWithoutReplacement(signal,control_signal_amt);
+            var exp_noise = jsPsych.randomization.sampleWithoutReplacement(noise,control_noise_amt);
+            
+            var block1_signal = jsPsych.randomization.sampleWithoutReplacement(exp_signal,control_signal);
+            var block1_noise = jsPsych.randomization.sampleWithoutReplacement(exp_noise,control_noise);
+            
+            block1 = block1_signal.concat(block1_noise);
+        
+            var working_signal1 = $(exp_signal).not(block1_signal).get();
+            var working_noise1 = $(exp_noise).not(block1_noise).get();
+        
+            var block2_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal1,control_signal);
+            var block2_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise1,control_noise);
+            
+            block2 = block2_signal.concat(block2_noise);
+        
+            var working_signal2 = $(working_signal1).not(block2_signal).get();
+            var working_noise2 = $(working_noise1).not(block2_noise).get();
+            
+            var block3_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal2,control_signal);
+            var block3_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise2,control_noise);
+            
+            block3 = block3_signal.concat(block3_noise);
+            
+            var working_signal3 = $(working_signal2).not(block3_signal).get();
+            var working_noise3 = $(working_noise2).not(block3_noise).get();
+            
+            var block4_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal3,control_signal);
+            var block4_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise3,control_noise);
+            
+            block4 = block4_signal.concat(block4_noise);
+            
+            var working_signal4 = $(working_signal3).not(block4_signal).get();
+            var working_noise4 = $(working_noise3).not(block4_noise).get();
+            
+            var block5_signal = jsPsych.randomization.sampleWithoutReplacement(working_signal4,control_signal);
+            var block5_noise = jsPsych.randomization.sampleWithoutReplacement(working_noise4,control_noise);
+            
+            block5 = block5_signal.concat(block5_noise);
+        };
+
+        var all_blocks = [block1,block2,block3,block4,block5];
+        
+        
+        /******************************************/
+        /*          BLOCK TRIAL VARIABLES         */
+        /******************************************/
+
+        /* BLOCK 1 TRIAL VARIABLE */
+        var test_procedure1 = {
+            timeline: [fixation,test],
+            timeline_variables: block1,
+            randomize_order: true,
+            repetitions: 1,
+            on_finish: function(data){
+                var block = 1;
+                var signal = 0;
+                if(control==false){
+                    var signal = signalrate_block1;
+                }
+                else{
+                    var signal = signalrate_control;
+                }
+                var current_node_id = jsPsych.currentTimelineNodeID();
+                var data_from_current_node = jsPsych.data.getDataByTimelineNode(current_node_id).addToAll({blockcounter: block,signalrate: signal});
+            }
+        };
+
+        /* BLOCK 2 TRIAL VARIABLE */
+        var test_procedure2 = {
+            timeline: [fixation,test],
+            timeline_variables: block2,
+            randomize_order: true,
+            repetitions: 1,
+            on_finish: function(data){
+                var block = 2;
+                var signal = 0;
+                if(control==false){
+                    var signal = signalrate_block2;
+                }
+                else{
+                    var signal = signalrate_control;
+                }
+                var current_node_id = jsPsych.currentTimelineNodeID();
+                var data_from_current_node = jsPsych.data.getDataByTimelineNode(current_node_id).addToAll({blockcounter: block,signalrate: signal}); 
+            }
+        };
+
+        /* BLOCK 3 TRIAL VARIABLE */
+        var test_procedure3 = {
+            timeline: [fixation,test],
+            timeline_variables: block3,
+            randomize_order: true,
+            repetitions: 1,
+            on_finish: function(data){
+                var block = 3;
+                var signal = 0;
+                if(control==false){
+                    var signal = signalrate_block3;
+                }
+                else{
+                    var signal = signalrate_control;
+                }
+                var current_node_id = jsPsych.currentTimelineNodeID();
+                var data_from_current_node = jsPsych.data.getDataByTimelineNode(current_node_id).addToAll({blockcounter: block,signalrate: signal}); 
+            }
+        };
+        
+        /* BLOCK 4 TRIAL VARIABLE */
+        var test_procedure4 = {
+            timeline: [fixation,test],
+            timeline_variables: block4,
+            randomize_order: true,
+            repetitions: 1,
+            on_finish: function(data){
+                var block = 4;
+                var signal = 0;
+                if(control==false){
+                    var signal = signalrate_block4;
+                }
+                else{
+                    var signal = signalrate_control;
+                }
+                var current_node_id = jsPsych.currentTimelineNodeID();
+                var data_from_current_node = jsPsych.data.getDataByTimelineNode(current_node_id).addToAll({blockcounter: block,signalrate: signal}); 
+            }
+        };
+        
+        /* BLOCK 5 TRIAL VARIABLE */
+        var test_procedure5 = {
+            timeline: [fixation,test],
+            timeline_variables: block5,
+            randomize_order: true,
+            repetitions: 1,
+            on_finish: function(data){
+                var block = 5;
+                var signal = 0;
+                if(control==false){
+                    var signal = signalrate_block5;
+                }
+                else{
+                    var signal = signalrate_control;
+                }
+                var current_node_id = jsPsych.currentTimelineNodeID();
+                var data_from_current_node = jsPsych.data.getDataByTimelineNode(current_node_id).addToAll({blockcounter: block, signalrate: signal}); 
+            }
+        };
+
+
+        /*  DIVIDER TRIAL VARIABLE */
+        var next_block = {
+            type: "html-keyboard-response",
+            stimulus: "Now take a short break. You can start the next group in a moment.",
+            trial_duration: null,
+            choices: [keycode],
+            prompt: "<p><i>Please Press the Spacebar When You're Ready to Continue</i></p>"
+        };
+
+        
+        /* SURVEY PROMPT VARIABLE */
+        var survey_prompt = {
+            type: "html-keyboard-response",
+            stimulus: "Thanks for participating in the study! We have a few last questions before you go.",
+            choices: [keycode],
+            prompt: "<p><i>Please Press the Spacebar to Continue</i></p>",
+            on_finish: function(data){
+                time = jsPsych.totalTime(); //save total time as global variable
+                jsPsych.data.addProperties({time: time});} //record total time
+        };
+        
+        /* FINAL QUESTION VARIABLES */
+        
+        var range_options = ["0-10% [SIGNAL]", "10-20% [SIGNAL]", "20-30% [SIGNAL]", "30-40% [SIGNAL]", "40-50% [SIGNAL]", "50-60% [SIGNAL]", "60-70% [SIGNAL]", "70-80% [SIGNAL]", "80-90% [SIGNAL]", "90-100% [SIGNAL]", "Not Sure"];
+        
+        var q_age = {
+            type: 'survey-text',
+            questions: [{
+                prompt: "How old are you?",
+            }],
+        };
+
+        var q_gender = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "What is your gender?", 
+                options: ["Male", "Female", "Non-Binary", "I Prefer Not to Answer"], 
+                required: true
+            }]
+        };
+
+        var q_difficulty = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "How difficult did you find the task to be?", 
+                options: ["Very Easy", "Easy", "Somewhat Easy","Neutral", "Somewhat Difficult", "Difficult", "Very Difficult"], 
+                required: true
+            }]
+        };
+
+        var q_handedness = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: " Are you right-handed or left-handed?", 
+                options: ["Right-handed", "Left-handed","Ambidextrous"], 
+                required: true
+            }]
+        };
+
+        var q_lenses = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "Do you wear corrective lenses? If so, are you wearing them right now? ", 
+                options: ["Yes, but I am not wearing them right now", "Yes, and I am wearing them right now", "No"], 
+                required: true
+            }]
+        };
+
+        var q_colorvision = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "Do you have normal color vision?", 
+                options: ["Yes", "No"], 
+                required: true
+            }]
+        };
+
+        var q_English = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "Is English your only native language?", 
+                options: ["Yes", "No, English is not my native language", "No, I spoke English and other languages growing up"], 
+                required: true
+            }]
+        };
+
+        var q_topic = {
+            type: 'survey-text',
+            questions: [{
+                prompt: "What do you think this study was about?"
+            }],
+        };
+
+        var q_progress = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "Do you think that it became easier or harder to find [SIGNAL STIMULI] as the study progressed?", 
+                options: ["It became easier to find [SIGNAL STIMULI] as the study progressed", "It became harder to find [SIGNAL STIMULI] as the study progressed", "It was about the same throughout the study", "I am not sure"], 
+                required: true
+            }]
+        };
+
+        var q_change = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "Do you feel that the amount of [SIGNAL STIMULI] in each series changed during the study?", 
+                options: ["No, there were the same number of [SIGNAL STIMULI] throughout the study", "Yes, there were fewer [SIGNAL STIMULI] as the study went on", "Yes, there were more [SIGNAL STIMULI] as the study went on", "I am not sure"], 
+                required: true
+            }]
+        };
+
+        var q_ratios = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "In the first few series, I saw:", 
+                options: range_options, 
+                required: true
+                        }, 
+                        {
+                prompt: "In the middle few series, I saw:", 
+                options: range_options, 
+                required: true
+                        }, 
+                        {
+                prompt: "In the last few series, I saw:", 
+                options: range_options, 
+                required: true
+                        }],
+            preamble: "<p> We want to get a sense of how many [SIGNAL STIMULI] you think you saw at different times in the study. Please indicate, using the options below, your impressions about what proportion of the [STIMULI] you saw were [SIGNAL]. If you have no idea, please check the box labeled <i>Not Sure</i> instead. </p>"
+        };
+
+        var q_definition = {
+            type: 'survey-multi-choice',
+            questions: [{
+                prompt: "By the end of the study, do you think that your definition of what counted as a [SIGNAL STIMULUS] changed?", 
+                options: ["No, I think that my definition of what counted as a [SIGNAL STIMULUS] did not change during the study.", "Yes, I think my definition of what counts as a [SIGNAL STIMULUS] expanded -- I counted a wider range of [STIMULI] as [SIGNAL] at the end of the study compared to the beginning of the study.", "Yes, I think my definition of what counts as a [SIGNAL STIMULUS] narrowed -- I counted a smaller range of [STIMULI] as [SIGNAL] at the end of the study compared to the beginning of the study.", "I am not sure if my definition changed"," I don't understand this question"], 
+                required: true
+            }]
+        };
+
+        var q_comments = {
+            type: 'survey-text',
+            questions: [{
+                prompt: "If you have any other comments about the study, please let us know here."          
+            }],
+        };
+
+        
+        /* DEBRIEFING PAGE VARIABLE */
+        var debrief_block = {
+            type: "external-html",
+            url: "debrief.html",
+            cont_btn: "Continue"
+        };
+        
+        /*  VALIDATION PAGE VARIABLE */
+        var submit_data = {
+            type: "html-button-response",
+            stimulus: ["<p>To submit your data and receive your <b>[PLATFORM] Verification Code</b>, please press the button below.</p>"],
+            choices: ["finish"]
+        };
+        
+
+        /******************************************/
+        /*           EXPERIMENT OUTLINE           */
+        /******************************************/
+
+        /* SHOW CONSENT PAGE VIA URL */
+        timeline.push(consent_block);
+        
+        /* SHOW INSTRUCTION PAGES */
+        timeline.push(instruct);
+        timeline.push(task_intro);
+        timeline.push(toggle);
+        
+        /* RUN EXPERIMENT */
+        timeline.push(test_procedure1);
+        timeline.push(toggle);
+        timeline.push(next_block);
+        timeline.push(toggle);
+        timeline.push(test_procedure2);
+        timeline.push(toggle);
+        timeline.push(next_block);
+        timeline.push(toggle);
+        timeline.push(test_procedure3);
+        timeline.push(toggle);
+        timeline.push(next_block);
+        timeline.push(toggle);
+        timeline.push(test_procedure4);
+        timeline.push(toggle);
+        timeline.push(next_block);
+        timeline.push(toggle);
+        timeline.push(test_procedure5);
+        timeline.push(toggle);
+        
+        /* IF NOT TEST SHOW FINAL QUESTIONS */
+        var if_test = {
+            timeline: [survey_prompt,q_age,q_gender,q_difficulty,q_handedness,q_lenses,q_colorvision,q_English,q_topic,q_progress,q_change,q_ratios,q_definition,q_comments],
+            conditional_function: function(){
+                // CHK TEST VAR
+                if(test_mode == true){
+            return false;
+        } else {
+            return true;
+        }
+            }
+        };
+        
+        timeline.push(if_test);
+        
+        /* GIVE PARTICIPANT INFORMATION & SUBMIT DATA */
+        timeline.push(debrief_block);
+        timeline.push(submit_data);
+
+
+        /******************************************/
+        /*           SAVING THE DATA              */
+        /******************************************/
+
+        // function to save data via php & display final message
+        function endExperiment(dataset, callback, subjectid){
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'write_data.php');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({filename: subjectid, filedata: dataset}));
+            setTimeout(callback,100);
+        };
+
+        
+        /* start the experiment */
+        jsPsych.init({
+            timeline: timeline,
+            display_element: 'jspsych-target',
+            preload_images: loading_images,
+            //exclude browsers less than 800x600
+            exclusions: {
+                min_width: 800,
+                min_height: 600
+            },
+            on_finish: function () { 
+                //call endExperiment function when experiment is over
+                endExperiment( jsPsych.data.get().csv(), function() { 
+                    document.write('<header id="lab-header" style="text-align:center; max-height:150px; max-width:100%; background-color:white; display:inline; padding:10px 10px 0px 10px;"><img id="lab-logo" style="display:block; margin-left:auto; margin-right:auto; max-height:100%; max-width:100%;" src="img/logo-img.png" alt="YourLabName logo"/></header><div id="jspsych-target" style="text-align:center; color:#57585b; font-family: Verdana, sans-serif; font-size: 18px; line-height: 1.6em;"><p>All done!<p>Your [PLATFORM] Verification Code is <span id="turk_code" style="font-weight:bold; font-size:150%;">' + subject_id + '</p><p>To receive payment for this [TASK], return to the [PLATFORM] page and enter this code.</p><p>Please contact us if something goes wrong and we\'ll fix it as quickly as possible.</p></div></div>') }, subject_id)
+        }
+        });
+
+
+    </script>
+    </html>
